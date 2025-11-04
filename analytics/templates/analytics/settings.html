@@ -1,35 +1,68 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-R">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurações</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f4f7f6; }
-        form { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        div { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"] { width: 95%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-        button { background-color: #ff0000; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
-        button:hover { background-color: #cc0000; }
-    </style>
-</head>
-<body>
-    <h1>Configurações da Conta</h1>
-    <p>Insira os IDs que você deseja monitorar no seu dashboard.</p>
+{% extends "analytics/base.html" %}
 
+{% block title %}Configurações - Media Scope{% endblock %}
+
+{% block content %}
+    
+<style>
+    .form-container {
+        background-color: var(--card-bg); /* Usa o fundo do card */
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        max-width: 600px;
+    }
+    .form-group { 
+        margin-bottom: 20px; 
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-muted); /* Usa a cor de texto cinza */
+    }
+    .form-group input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #444; /* Borda mais escura */
+        background-color: var(--bg-color); /* Fundo da página */
+        color: var(--text-color); /* Texto branco */
+        font-size: 1rem;
+    }
+    .form-container button {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .form-container button:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<h1>Configurações da Conta</h1>
+<p style="color: var(--text-muted); margin-bottom: 20px;">Insira os IDs que você deseja monitorar no seu dashboard.</p>
+
+<div class="form-container">
     <form method="POST">
-        {% csrf_token %} <div>
-            <label for="{{ form.youtube_channel_id.id_for_label }}">{{ form.youtube_channel_id.label }}</label>
-            {{ form.youtube_channel_id }}
-        </div>
+        {% csrf_token %} 
 
-        <div>
+        <p style="color: var(--text-muted); margin-bottom: 15px;">
+            Seu ID de Canal do YouTube foi salvo automaticamente via login do Google.
+        </p>
+
+        <div class="form-group">
             <label for="{{ form.default_video_id.id_for_label }}">{{ form.default_video_id.label }}</label>
             {{ form.default_video_id }}
         </div>
 
         <button type="submit">Salvar</button>
     </form>
-</body>
-</html>
+</div>
+
+{% endblock %}

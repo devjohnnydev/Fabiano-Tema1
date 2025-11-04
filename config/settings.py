@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
     'analytics',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -77,6 +79,38 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '1030026652721-39u6uokp85lkjvuuoi0f3clm9hgmq2l1.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name', 'picture']
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'error',
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -129,3 +163,91 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Em config/settings.py
+
+# Para onde o @login_required deve redirecionar (USE O NOME DA ROTA DE LOGIN)
+LOGIN_URL = 'login' # <-- Mude 'login' para o NOME da sua rota de login
+
+# Para onde o usuário vai DEPOIS que o login dá certo
+LOGIN_REDIRECT_URL = 'dashboard_home' # (Esse já está certo)
+
+# Para onde o usuário vai DEPOIS do logout
+LOGOUT_REDIRECT_URL = 'login' # (Opcional, mas bom)
+
+# Diz ao Django para usar nosso usuário customizado em vez do padrão
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Em config/settings.py
+
+# ... (outras configurações) ...
+
+# --- Configurações do Social Auth (Google) ---
+
+# Define as "permissões" que vamos pedir ao usuário
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',      # Pega o email
+    'https://www.googleapis.com/auth/userinfo.profile',    # Pega nome/foto
+    'https://www.googleapis.com/auth/youtube.readonly',    # Vê dados públicos (vídeos, etc)
+    'https://www.googleapis.com/auth/yt-analytics.readonly', # Vê dados PRIVADOS (impressões, etc)
+]
+
+# Pede um "refresh token". Isso é VITAL.
+# Permite que nosso app pegue os dados do YouTube mesmo
+# quando o usuário não está ativamente logado.
+# Em config/settings.py
+
+# ... (outras configurações) ...
+
+# JÁ TEMOS ISSO (garante que estamos pedindo o refresh_token):
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'offline',
+    'prompt': 'consent',
+}
+
+# --- A LINHA QUE FALTAVA ---
+# Diz ao pipeline para EXPLICITAMENTE salvar o refresh_token
+# no campo 'extra_data' do UserSocialAuth.
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = [
+    'refresh_token',
+    'expires_in',
+    'token_type',
+]
+
+# (Opcional, mas não custa)
+# Garante que o pipeline de associação por email esteja ativo
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email', # <-- Garante que está aqui
+    'social_core.pipeline.user.create_user',
+    'accounts.pipeline.save_youtube_channel_id', 
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+# Em config/settings.py
+
+# ... (outras configurações) ...
+
+# --- Configuração de Cookies para Login OAuth ---
+# Garante que os cookies de sessão e CSRF sejam enviados
+# de volta após o redirecionamento do Google.
+
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Em config/settings.py
+
+# ... (outras configs) ...
+
+# --- Configuração de Cache do Banco de Dados ---
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'youtube_data_cache', # Nome da tabela que será criada
+    }
+}

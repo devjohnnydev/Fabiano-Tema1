@@ -1,174 +1,217 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard do YouTube</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% extends "analytics/base.html" %}
 
-    <style>
-        :root {
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --primary-color: #ff0000; /* Cor do YouTube */
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
-        header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        header img {
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-        }
-        .error {
-            background-color: #ffe0e0;
-            color: #d00;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #d00;
-        }
+{% block title %}Dashboard - Media Scope{% endblock %}
 
-        /* Grid de Estatísticas */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-        }
-        .stat-card h3 {
-            margin-top: 0;
-            font-size: 1.1rem;
-            color: #555;
-        }
-        .stat-card .number {
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin: 10px 0;
-        }
+{% block content %}
 
-        /* Seção do Gráfico */
-        .chart-container {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); gap: 25px;
+    }
+    .kpi-card { grid-column: span 1; }
+    .kpi-card-value { font-size: 2.5rem; font-weight: 700; color: var(--text-color); margin-bottom: 10px; }
+    .kpi-card-trend { display: flex; gap: 10px; align-items: center; font-size: 0.9rem; color: var(--green); }
+    .kpi-card-trend .percent { background-color: rgba(0, 196, 159, 0.1); padding: 4px 8px; border-radius: 20px; }
+    .insights-card { grid-column: span 2; grid-row: span 2; }
+    .insights-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .insights-legend { display: flex; gap: 20px; }
+    .insights-legend span { display: flex; align-items: center; gap: 8px; }
+    .insights-legend .dot1 { width: 10px; height: 10px; background-color: var(--primary); border-radius: 50%; }
+    .insights-legend .dot2 { width: 10px; height: 10px; background-color: var(--secondary); border-radius: 50%; }
+    
+    /* [NOVO] Estilo para o gráfico Donut de Região */
+    .region-chart-container {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        {% if error_message %}
-            <div class="error">
-                <strong>Erro:</strong> {{ error_message }}
-            </div>
-        {% endif %}
+    .comparison-card { grid-column: span 1; }
+    .comp-item { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .comp-item:last-child { margin-bottom: 0; }
+    .comp-icon { font-size: 2rem; color: var(--primary); background-color: var(--bg-color); padding: 12px; border-radius: 10px; }
+    .comp-text { flex-grow: 1; }
+    .comp-text span { font-size: 0.9rem; color: var(--text-muted); }
+    .comp-text h4 { font-size: 1.2rem; color: var(--text-color); }
+    .comp-chart { width: 60px; height: 60px; }
+    .table-card { grid-column: 1 / -1; }
+    .video-table { width: 100%; border-collapse: collapse; }
+    .video-table th, .video-table td { padding: 15px 10px; text-align: left; border-bottom: 1px solid var(--bg-color); }
+    .video-table th { color: var(--text-muted); font-size: 0.9rem; }
+    .video-table td { font-weight: 500; }
+    .video-title { display: flex; align-items: center; gap: 15px; }
+    .video-title img { width: 50px; height: 30px; border-radius: 4px; object-fit: cover; }
+    .video-table .status-active { color: var(--green); }
+    .cta-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; flex-direction: column; justify-content: center; }
+    .cta-card h3 { font-size: 1.3rem; margin-bottom: 10px; }
+    .cta-card p { color: var(--text-color); margin-bottom: 20px; }
+    .cta-card a { text-decoration: none; color: #333; background-color: #fff; padding: 10px 20px; border-radius: 6px; font-weight: 600; align-self: flex-start; }
+    .error-card { background-color: #353542; padding: 20px; border-radius: 12px; color: #ff8a80; grid-column: 1 / -1; }
+</style>
 
-        {% if channel_stats %}
-            <header>
-                <img src="{{ channel_stats.thumbnail_url }}" alt="Thumbnail do Canal">
-                <h1>{{ channel_stats.title }}</h1>
-            </header>
+{% if error_message %}
+    <div class="card error-card">
+        <h3>Erro ao carregar dados</h3>
+        <p>{{ error_message }}</p>
+    </div>
+{% endif %}
 
-            <h2>Estatísticas Gerais do Canal</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Inscritos</h3>
-                    <div class="number">{{ channel_stats.subscriber_count|floatformat:"0" }}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Visualizações Totais</h3>
-                    <div class="number">{{ channel_stats.view_count|floatformat:"0" }}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Total de Vídeos</h3>
-                    <div class="number">{{ channel_stats.video_count|floatformat:"0" }}</div>
-                </div>
-            </div>
+<div class="dashboard-grid">
 
-            {% if video_chart_data %}
-                <div class="chart-container">
-                    <canvas id="videoChart"></canvas>
-                </div>
-                {{ video_chart_data|json_script:"chart-data" }}
-            {% endif %}
-
-        {% elif not error_message %}
-            <p>Nenhum dado encontrado.</p>
-        {% endif %}
+    <div class="card kpi-card">
+        <div class="card-title">Top 5 Regiões (Views)</div>
+        <div class="region-chart-container">
+            <canvas id="regionChart"></canvas>
+        </div>
+        {{ region_chart_data|json_script:"region-data" }}
     </div>
 
-    <script>
-        // Pega os dados que passamos com o 'json_script'
-        const chartDataElement = document.getElementById('chart-data');
+    <div class="card kpi-card">
+        <div class="card-title">Likes (Últimos 28 dias)</div>
+        <div class="kpi-card-value">{{ kpi_cards.likes|default:"0" }}</div>
+        <div class="kpi-card-trend">
+            <span>(Período de 28 dias)</span>
+        </div>
+    </div>
 
-        if (chartDataElement) {
-            const chartData = JSON.parse(chartDataElement.textContent);
-            const ctx = document.getElementById('videoChart').getContext('2d');
+    <div class="card kpi-card">
+        <div class="card-title">Visualizações (Últimos 28 dias)</div>
+        <div class="kpi-card-value">{{ kpi_cards.views|default:"0" }}</div>
+        <div class="kpi-card-trend">
+            <span>(Período de 28 dias)</span>
+        </div>
+    </div>
 
-            new Chart(ctx, {
-                type: 'bar', // Tipo de gráfico: barras
-                data: {
-                    labels: chartData.labels, // ['Visualizações', 'Likes', 'Comentários']
-                    datasets: [{
-                        label: `Estatísticas do Vídeo: ${chartData.video_title}`,
-                        data: chartData.data, // [view_count, like_count, comment_count]
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(75, 192, 192, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(75, 192, 192, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
+    <div class="card insights-card">
+        <div class="insights-header">
+            <div class="insights-legend">
+                <span class="card-title">Insights (Últimos 28 dias)</span>
+                <span><span class="dot1"></span> Visualizações</span>
+                <span><span class="dot2"></span> Likes</span>
+            </div>
+        </div>
+        <div style="height: 350px;">
+            <canvas id="insightsChart"></canvas>
+        </div>
+        {{ insights_chart_data|json_script:"chart-data" }}
+    </div>
+
+    <div class="card comparison-card">
+        <div class="card-title">Comparação (Em breve)</div>
+        <div class="comp-item">
+            <span class="material-symbols-outlined comp-icon">thumb_up</span>
+            <div class="comp-text"><span>Likes</span><h4>N/A</h4></div>
+        </div>
+        <div class="comp-item">
+            <span class="material-symbols-outlined comp-icon">comment</span>
+            <div class="comp-text"><span>Comentários</span><h4>N/A</h4></div>
+        </div>
+        <div class="comp-item">
+            <span class="material-symbols-outlined comp-icon">share</span>
+            <div class="comp-text"><span>Compartilhados</span><h4>N/A</h4></div>
+        </div>
+    </div>
+
+    <div class="card table-card">
+        <div class="card-title">Engajamento por vídeo (5 mais recentes)</div>
+        <table class="video-table">
+            <thead>
+                <tr>
+                    <th>Vídeo</th>
+                    <th>Status</th>
+                    <th>Likes</th>
+                    <th>Impressões</th>
+                    <th>Comentários</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for video in video_table_data %}
+                <tr>
+                    <td>
+                        <div class="video-title">
+                            <img src="{{ video.thumbnail }}" alt="thumbnail">
+                            <span>{{ video.title|truncatechars:40 }}</span>
+                        </div>
+                    </td>
+                    <td><span class="status-active">{{ video.status }}</span></td>
+                    <td>{{ video.likes|floatformat:"0" }}</td>
+                    <td>{{ video.impressions|floatformat:"0" }}</td> <td>{{ video.comments|floatformat:"0" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px;">Nenhum vídeo encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card cta-card">
+        <h3>De um Boost na sua conta</h3>
+        <p>O Plano que Você Usa para Dominar o Mercado</p>
+        <a href="#">Saiba Mais</a>
+    </div>
+
+</div>
+
+
+<script>
+    // --- Gráfico de Insights (Barras) ---
+    const chartDataElement = document.getElementById('chart-data');
+    if (chartDataElement) {
+        const chartData = JSON.parse(chartDataElement.textContent);
+        
+        new Chart( document.getElementById('insightsChart'), {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: chartData.datasets.map(dataset => ({
+                    ...dataset,
+                    borderRadius: 6
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#444' }, ticks: { color: '#A0A0A0' } },
+                    x: {
+                        type: 'time',
+                        time: { unit: 'day', displayFormats: { day: 'MMM dd' } },
+                        grid: { display: false },
+                        ticks: { color: '#A0A0A0' }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- [NOVO] Gráfico de Região (Donut) ---
+    const regionDataElement = document.getElementById('region-data');
+    if (regionDataElement) {
+        const regionData = JSON.parse(regionDataElement.textContent);
+        
+        new Chart( document.getElementById('regionChart'), {
+            type: 'doughnut',
+            data: regionData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#A0A0A0',
+                            boxWidth: 10
                         }
                     }
                 }
-            });
-        }
-    </script>
+            }
+        });
+    }
+</script>
 
-</body>
-</html>
+{% endblock %}
