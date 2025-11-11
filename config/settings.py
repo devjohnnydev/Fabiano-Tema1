@@ -180,7 +180,7 @@ LOGIN_URL = 'login' # <-- Mude 'login' para o NOME da sua rota de login
 LOGIN_REDIRECT_URL = 'dashboard_home' # (Esse já está certo)
 
 # Para onde o usuário vai DEPOIS do logout
-LOGOUT_REDIRECT_URL = 'login' # (Opcional, mas bom)
+LOGOUT_REDIRECT_URL = 'home' # (Opcional, mas bom)
 
 # Diz ao Django para usar nosso usuário customizado em vez do padrão
 AUTH_USER_MODEL = 'accounts.CustomUser'

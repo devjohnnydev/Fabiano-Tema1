@@ -159,52 +159,55 @@
 </div>
 
 <div class="pricing-grid">
-    <div class="plan-card">
-        <div class="plan-icon"><span class="material-symbols-outlined">auto_awesome</span></div>
-        <h3>Plano Essential</h3>
-        <div class="plan-price" data-monthly="R$237" data-annual="2100">
-            R$237<span>/mês</span>
-        </div>
-        <ul class="plan-features">
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboard básico</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas por email</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> 5.000 menções/mês</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> 1 Usuário</li>
-        </ul>
-        <a href="#" class="plan-button">Comece agora</a>
-    </div>
 
+    {% for plan in plans %}
     <div class="plan-card">
-        <span class="popular-badge">Mais Popular</span>
-        <div class="plan-icon"><span class="material-symbols-outlined">business_center</span></div>
-        <h3>Enterprise plan</h3>
-        <div class="plan-price" data-monthly="R$1297" data-annual="9079"> R$1297<span>/mês</span>
-        </div>
-        <ul class="plan-features">
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Menções limitadas</li> <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise preditiva com IA</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte dedicado</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Segura enterprise</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas inteligentes 24/7</li>
-        </ul>
-        <a href="#" class="plan-button">Comece agora</a>
-    </div>
 
-    <div class="plan-card">
-        <div class="plan-icon"><span class="material-symbols-outlined">workspace_premium</span></div>
-        <h3>Professional plan</h3>
-        <div class="plan-price" data-monthly="R$597" data-annual="4776"> R$597<span>/mês</span>
+        <div class="plan-icon">
+            <span class="material-symbols-outlined">{{ plan.icon_name|default:'auto_awesome' }}</span>
         </div>
+
+        <h3>{{ plan.name }}</h3>
+
+        <div class="plan-price" 
+             data-monthly="{{ plan.price_monthly|floatformat:0 }}" 
+             data-annual="{{ plan.price_annual|floatformat:0 }}">
+
+            R${{ plan.price_monthly|floatformat:0 }}<span>/mês</span>
+        </div>
+
         <ul class="plan-features">
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> 20.000 menções/mês</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboards ilimitados</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte prioritário</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos avançada</li>
-            <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas multi-canais</li>
-        </ul>
-        <a href="#" class="plan-button">Comece agora</a>
+    {% if plan.name == 'Essential' %}
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboard básico</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas por email</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> 5.000 menções/mês</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> 1 Usuário</li>
+
+    {% elif plan.name == 'Professional' %}
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> 20.000 menções/mês</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboards ilimitados</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte prioritário</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos avançada</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas multi-canais</li>
+
+    {% elif plan.name == 'Enterprise' %}
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Menções ilimitadas</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise preditiva com IA</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte dedicado</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Segurança enterprise</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas inteligentes 24/7</li>
+
+    {% else %}
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Feature 1</li>
+        <li><span class="material-symbols-outlined icon-check">check_circle</span> Feature 2</li>
+    {% endif %}
+</ul>
+
+<a href="{% url 'subscribe' plan.id %}" class="plan-button">Comece agora</a>
     </div>
-</div>
+    {% endfor %}
+    </div>
 
 <script>
     const btnMonthly = document.getElementById('btn-monthly');
@@ -215,7 +218,8 @@
         btnMonthly.classList.add('active');
         btnAnnual.classList.remove('active');
         prices.forEach(priceEl => {
-            priceEl.innerHTML = `${priceEl.dataset.monthly}<span>/mês</span>`;
+            // Mostra o preço mensal padrão
+            priceEl.innerHTML = `R$${priceEl.dataset.monthly}<span>/mês</span>`;
         });
     });
 
@@ -223,12 +227,19 @@
         btnAnnual.classList.add('active');
         btnMonthly.classList.remove('active');
         prices.forEach(priceEl => {
-            // Usei a lógica do seu design (os preços anuais são /mês também)
-            // Se os preços anuais fossem anuais, a lógica seria outra
-            const annualPrice = priceEl.dataset.annual;
-            priceEl.innerHTML = `R$${annualPrice}<span>/mês</span>`;
+            // --- [A LÓGICA CORRIGIDA "A NATA"] ---
+
+            // 1. Pega o preço "mensal" daquele plano anual (ex: 237)
+            // Usamos 'parseFloat' para garantir que é um número
+            const annualMonthlyPrice = parseFloat(priceEl.dataset.annual);
+
+            // 2. Calcula o total por ano (ex: 237 * 12 = 2844)
+            // Usamos 'Math.round' para garantir que não tem centavos quebrados
+            const totalAnnualPrice = Math.round(annualMonthlyPrice * 12);
+
+            // 3. Mostra o preço TOTAL com a etiqueta "/ano"
+            priceEl.innerHTML = `R$${totalAnnualPrice}<span>/ano</span>`;
         });
     });
 </script>
-
 {% endblock %}

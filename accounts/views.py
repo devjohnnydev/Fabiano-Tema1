@@ -1,8 +1,10 @@
+# Em accounts/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.views import View
-from django.contrib.auth.decorators import login_required
+# (O login_required e CustomUser não são mais usados aqui, mas pode deixar)
+from django.contrib.auth.decorators import login_required 
 from .forms import SignUpForm, SignInForm
 from .models import CustomUser
 
@@ -13,7 +15,8 @@ class AuthView(View):
     def get(self, request):
         # Se já estiver logado, redireciona para dashboard
         if request.user.is_authenticated:
-            return redirect('dashboard')
+            # [CONSERTO 1: O NOME DA URL MUDOU]
+            return redirect('dashboard_home') 
         
         signup_form = SignUpForm()
         signin_form = SignInForm()
@@ -32,7 +35,8 @@ class AuthView(View):
         elif action == 'signin':
             return self.handle_signin(request)
         
-        return redirect('auth')
+        # [CONSERTO 2: O NOME DA URL MUDOU]
+        return redirect('login')
     
     def handle_signup(self, request):
         """
@@ -52,7 +56,7 @@ class AuthView(View):
                 request, 
                 f'Bem-vindo, {user.get_full_name()}! Sua conta foi criada com sucesso.'
             )
-            return redirect('dashboard_home')
+            return redirect('dashboard_home') # <-- Este já estava certo!
         else:
             # Mostra erros de validação
             for field, errors in form.errors.items():
@@ -81,7 +85,7 @@ class AuthView(View):
             # Login bem-sucedido
             login(request, user)
             messages.success(request, f'Bem-vindo de volta, {user.get_full_name()}!')
-            return redirect('dashboard_home')
+            return redirect('dashboard_home') # <-- Este também já estava certo!
         else:
             # Credenciais inválidas
             messages.error(request, 'Email ou senha incorretos. Tente novamente.')
@@ -95,19 +99,6 @@ class AuthView(View):
             }
             return render(request, 'accounts/auth.html', context)
 
-def logout_view(request):
-    """
-    Faz logout do usuário
-    """
-    logout(request)
-    messages.success(request, 'Você saiu da sua conta com sucesso.')
-    return redirect('login')
-
-@login_required
-def dashboard_view(request):
-    """
-    Página principal após login (exemplo)
-    """
-    return render(request, 'analytics/dashboard.html', {
-        'user': request.user
-    })
+# 
+# [FUNÇÕES FANTASMAS 'logout_view' e 'dashboard_view' APAGADAS]
+#

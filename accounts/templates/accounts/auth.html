@@ -283,9 +283,47 @@
                 gap: 0;
             }
         }
+
+        .django-messages {
+        position: fixed; /* Fica fixo na tela */
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 300px;
+    }
+    .message-toast {
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        opacity: 0;
+        animation: fadeIn 0.5s forwards;
+    }
+    .message-toast.success { background-color: #00C49F; } /* Verde */
+    .message-toast.error { background-color: #E845A0; } /* Rosa/Vermelho */
+    .message-toast.warning { background-color: #FBBC05; } /* Amarelo */
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
     </style>
 </head>
 <body>
+    <body>
+
+{% if messages %}
+<div class="django-messages">
+    {% for message in messages %}
+    <div class="message-toast {{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
     <div class="auth-container">
         <button class="close-btn" onclick="window.location.href='/'">×</button>
         
@@ -330,7 +368,7 @@
 
             <div class="divider">OR</div>
 
-            <form method="POST" action="{% url 'login' %}">
+            <form method="POST" action="{% url 'home' %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="signin">
                 
@@ -366,7 +404,7 @@
 
             <div class="divider">OR</div>
 
-            <form method="POST" action="{% url 'login' %}">
+            <form method="POST" action="{% url 'home' %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="signup">
                 

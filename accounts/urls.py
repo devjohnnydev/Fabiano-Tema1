@@ -1,16 +1,10 @@
-# Em accounts/urls.py
+# Em accounts/urls.py (O CÓDIGO CORRETO E LIMPO)
+
 from django.urls import path
-from .views import AuthView, logout_view 
-# Removemos o dashboard_view, ele não pertence a este app
+from . import views  # <-- Importa o arquivo 'views.py' INTEIRO
 
 urlpatterns = [
-    # Esta rota agora será: /accounts/login/
-    path('login/', AuthView.as_view(), name='login'), 
-    
-    # Esta rota agora será: /accounts/logout/
-    path('logout/', logout_view, name='logout'),
-    
-    # OBS: Se sua 'AuthView' também cuida do registro, tudo bem.
-    # Se não, você adicionaria o 'register' aqui também:
-    # path('register/', RegisterView.as_view(), name='register'),
+    # Aponta para a CLASSE 'AuthView' (com 'A' e 'V' maiúsculo)
+    # e usa o '.as_view()'
+    path('login/', views.AuthView.as_view(), name='login'),
 ]

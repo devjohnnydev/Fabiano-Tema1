@@ -2,31 +2,35 @@
 from django.shortcuts import render, redirect # (O 'redirect' já deve estar lá)
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Sum, Count
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 
-from subscriptions.models import Subscription, Payment
+from subscriptions.models import Subscription, Payment, Plan
 
 # Isso checa se o usuário é um 'superuser'. Se não, ele dá erro.
 def is_admin(user):
     return user.is_superuser
 
+# Em core/views.py
 def home_view(request):
-    """
-    Futura página de login/home.
-    """
-    # Se o usuário já estiver logado, manda ele pro dashboard
+    # Se o usuário já está logado, manda pro dashboard
     if request.user.is_authenticated:
         return redirect('dashboard_home')
-        
-    # Se não, mostra a página de login
-    return render(request, 'accounts/auth.html')
+
+    # Se não, manda para a PÁGINA DE LOGIN REAL
+    return redirect('login')
 
 
 def planos_view(request):
     """
     Mostra a página de preços (baseado no seu design).
     """
-    context = {}
+
+    # [LINHA NOVA] Busca os planos REAIS do banco de dados
+    plans = Plan.objects.all().order_by('price_monthly') # Ordena do mais barato ao mais caro
+
+    context = {
+        'plans': plans  # [LINHA NOVA] Manda os planos para o HTML
+    }
     return render(request, 'core/planos.html', context)
 
 
@@ -61,3 +65,11 @@ def admin_dashboard_view(request):
     }
 
     return render(request, 'core/admin_dashboard.html', context)
+
+def custom_logout_view(request):
+    """
+    Faz o logout do usuário (forçado via GET)
+    e o redireciona para a página de login ('home').
+    """
+    logout(request)
+    return redirect('home')
