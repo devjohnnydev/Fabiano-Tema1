@@ -26,3 +26,7 @@ db.sqlite3
 # 6. Arquivos de Sistema (Mac/Windows)
 .DS_Store
 Thumbs.db
+
+# Ignorar arquivos de mídia (uploads de usuários)
+media/
+profile_pics/
