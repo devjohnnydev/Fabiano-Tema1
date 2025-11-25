@@ -108,8 +108,8 @@
     }
 </style>
 
-<div class="search-box">
-        <form method="POST">
+<div class="search-box" id="analysis-form-container">
+        <form method="POST" id="sentiment-form">
             {% csrf_token %}
             
             {% if user_videos %}
@@ -123,54 +123,32 @@
                 </select>
                 <button type="submit" class="btn-analyze">Analisar</button>
             {% else %}
-                <p style="color: #E845A0;">Não encontramos vídeos no seu canal ou você não está conectado ao Google.</p>
+                <p style="color: #E845A0;">Não encontramos vídeos ou conecte o Google.</p>
             {% endif %}
-            
         </form>
-        
         {% if error %}
-            <div style="margin-top: 20px; color: #E845A0; font-weight: bold; background: rgba(232,69,160,0.1); padding: 10px; border-radius: 8px;">
-                ⚠️ {{ error }}
-            </div>
+            <div style="color: #E845A0; margin-top: 15px; font-weight: bold;">{{ error }}</div>
         {% endif %}
     </div>
-    {% if stats %}
-    <div class="stats-grid">
-        <div class="stat-card card-pos">
-            <div class="stat-number">{{ stats.pos }}</div>
-            <div class="stat-label">Positivos 😊</div>
-        </div>
-        <div class="stat-card card-neu">
-            <div class="stat-number">{{ stats.neu }}</div>
-            <div class="stat-label">Neutros 😐</div>
-        </div>
-        <div class="stat-card card-neg">
-            <div class="stat-number">{{ stats.neg }}</div>
-            <div class="stat-label">Negativos 😡</div>
-        </div>
+
+    <div id="loading-container" style="display: none; text-align: center; padding: 40px;">
+        <img src="{% static 'img/loading.gif' %}" alt="Carregando..." style="width: 80px; height: auto;">
+        <h3 style="color: #fff; margin-top: 20px;">Analisando comentários com IA...</h3>
+        <p style="color: #a0a0a0;">Isso pode levar alguns segundos.</p>
     </div>
 
-    <h3 style="color: #fff; margin-top: 40px; margin-bottom: 15px;">Amostra de Comentários Analisados</h3>
-    <div class="comments-container">
-        {% for comment in comments %}
-        <div class="comment-item">
-            <div style="width: 80%;">
-                <span class="author-name">{{ comment.author }}</span>
-                <span class="comment-text">"{{ comment.text }}"</span>
-            </div>
-            <div>
-                {% if comment.sentiment == 'Positivo' %}
-                    <span class="badge badge-pos">Positivo</span>
-                {% elif comment.sentiment == 'Negativo' %}
-                    <span class="badge badge-neg">Negativo</span>
-                {% else %}
-                    <span class="badge badge-neu">Neutro</span>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    </div> <script>
+    const form = document.getElementById('sentiment-form');
+    const formContainer = document.getElementById('analysis-form-container');
+    const loadingContainer = document.getElementById('loading-container');
 
-</div>
+    if (form) {
+        form.addEventListener('submit', function() {
+            // 1. Esconde o formulário
+            formContainer.style.display = 'none';
+            // 2. Mostra o GIF
+            loadingContainer.style.display = 'block';
+        });
+    }
+</script>
 {% endblock %}

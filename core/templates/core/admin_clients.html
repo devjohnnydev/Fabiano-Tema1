@@ -22,13 +22,14 @@
 
     <div class="card" style="padding: 0; overflow: hidden; margin-top: 30px;">
         <table class="client-table">
+            <table class="client-table">
             <thead>
                 <tr>
                     <th>Usuário</th>
                     <th>Email</th>
                     <th>Data Cadastro</th>
                     <th>Plano Atual</th>
-                    <th>Status</th>
+                    <th>Validade</th> <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -57,6 +58,15 @@
                             <span style="color: #a0a0a0;">Sem Plano</span>
                         {% endif %}
                     </td>
+                    
+                    <td>
+                        {% if user.subscription.current_period_end %}
+                            {{ user.subscription.current_period_end|date:"d/m/Y" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
                     <td>
                         {% if user.is_active %}
                             <span style="color: #00C49F;">● Ativo</span>
