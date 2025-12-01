@@ -90,6 +90,9 @@ DB_USER='postgres'
 DB_PASSWORD='sua-senha-aqui'
 DB_HOST='localhost'
 DB_PORT='5432'
+
+EMAIL_HOST_USER=your-email-here
+EMAIL_HOST_PASSWORD=your-password-here
 ``` 
 
 4. Instale dependências:
