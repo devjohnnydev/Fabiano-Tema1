@@ -1,66 +1,59 @@
 from django.db import models
-from django.conf import settings # Para pegar o User (AUTH_USER_MODEL)
+from django.conf import settings
 
-# Modelo 1: O "Cardápio" de Planos
+
 class Plan(models.Model):
-    name = models.CharField(max_length=100, unique=True) # Ex: "Plano Essential"
-    price_monthly = models.DecimalField(max_digits=10, decimal_places=2) # Ex: 297.00
-    price_annual = models.DecimalField(max_digits=10, decimal_places=2) # Ex: 237.00 (por mês)
-    
-    # Campo para o seu design (o ícone roxo)
-    # Veja: https://fonts.google.com/icons
+    name = models.CharField(max_length=100, unique=True)
+    price_monthly = models.DecimalField(max_digits=10, decimal_places=2)
+    price_annual = models.DecimalField(max_digits=10, decimal_places=2)
     icon_name = models.CharField(max_length=50, blank=True, help_text="Nome do ícone do Material Symbols (ex: 'auto_awesome')")
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return str(self.name)
 
-# Modelo 2: O "Contrato" (Quem assinou o quê)
+
 class Subscription(models.Model):
     
     class StatusChoices(models.TextChoices):
         ACTIVE = 'active', 'Ativa'
         CANCELED = 'canceled', 'Cancelada'
-        PAST_DUE = 'past_due', 'Vencida' # (Vencida/Aguardando Pagamento)
+        PAST_DUE = 'past_due', 'Vencida'
         FREE_TRIAL = 'free_trial', 'Trial Gratuito'
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
         related_name='subscription'
-    ) # Um usuário só pode ter UMA assinatura
+    )
     
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, related_name='subscriptions')
     status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.FREE_TRIAL)
     
-    start_date = models.DateTimeField(auto_now_add=True) # Data que o registro foi criado
-    current_period_end = models.DateTimeField(null=True, blank=True) # Data que a assinatura expira
+    start_date = models.DateTimeField(auto_now_add=True)
+    current_period_end = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.user.email} - {self.plan.name if self.plan else 'Sem Plano'} ({self.status})"
-    
-    # Em subscriptions/models.py
-# (O 'Plan' e 'Subscription' que já fizemos estão aqui em cima)
+    def __str__(self) -> str:
+        user_email = getattr(self.user, 'email', 'Unknown') if self.user else 'No User'
+        plan_name = self.plan.name if self.plan else 'Sem Plano'
+        return f"{user_email} - {plan_name} ({self.status})"
 
-...
 
-# Modelo 3: O "Caixa Registadora" (Histórico de Pagamentos)
 class Payment(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
-        on_delete=models.SET_NULL, # Se o user for deletado, guardamos o histórico
+        on_delete=models.SET_NULL,
         null=True,
         related_name='payments'
     )
     subscription = models.ForeignKey(
         Subscription,
-        on_delete=models.SET_NULL, # Linka o pagamento à assinatura
+        on_delete=models.SET_NULL,
         null=True,
         related_name='payments'
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2) # O valor que foi pago
-    payment_date = models.DateTimeField(auto_now_add=True) # Quando foi pago
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateTimeField(auto_now_add=True)
 
-    # No futuro, podemos adicionar 'stripe_payment_id', etc.
-
-    def __str__(self):
-        return f"Pagamento de {self.amount} por {self.user.email if self.user else 'Usuário Deletado'}"
+    def __str__(self) -> str:
+        user_email = getattr(self.user, 'email', 'Usuário Deletado') if self.user else 'Usuário Deletado'
+        return f"Pagamento de {self.amount} por {user_email}"

@@ -1,32 +1,122 @@
-# Arquivo .gitignore
-
-# 1. Segurança (NUNCA suba arquivos com senhas ou chaves)
-.env
-*.env
-
-# 2. Ambiente Virtual (NUNCA suba a pasta do venv)
-venv/
-env/
-.venv/
-
-# 3. Arquivos do Python (Lixo de compilação)
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# 4. Banco de Dados de Desenvolvimento
-*.sqlite3
-db.sqlite3
+# C extensions
+*.so
 
-# 5. Arquivos de IDEs (VSCode, PyCharm, etc.)
-.vscode/
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pythonlibs/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+# IDE
 .idea/
+.vscode/
 
-# 6. Arquivos de Sistema (Mac/Windows)
+# Static files collected
+staticfiles/
+
+# Media files
+media/
+
+# Database
+*.sqlite3
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Ignorar arquivos de mídia (uploads de usuários)
-media/
-profile_pics/
+# Local development
+.local/
+.cache/
+.upm/
