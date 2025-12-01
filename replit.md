@@ -23,7 +23,9 @@ Aplicação Django para análise de dados do YouTube, incluindo dashboard de ana
 ├── static/            # Arquivos estáticos
 ├── requirements.txt   # Dependências Python
 ├── Procfile          # Comando de deploy (Railway/Heroku)
-└── railway.json      # Configurações Railway
+├── railway.json      # Configurações Railway
+├── nixpacks.toml     # Configurações Nixpacks
+└── runtime.txt       # Versão do Python
 ```
 
 ## Tecnologias Utilizadas
@@ -39,13 +41,14 @@ Aplicação Django para análise de dados do YouTube, incluindo dashboard de ana
 ## Variáveis de Ambiente Necessárias
 Veja `.env.example` para lista completa:
 - `SECRET_KEY` - Chave secreta do Django
-- `DATABASE_URL` - URL do banco PostgreSQL
+- `DATABASE_URL` - URL do banco PostgreSQL (Railway fornece automaticamente)
 - `GOOGLE_OAUTH2_KEY` - Client ID do Google OAuth
 - `GOOGLE_OAUTH2_SECRET` - Client Secret do Google OAuth
 - `EMAIL_HOST_USER` - Email para envio
 - `EMAIL_HOST_PASSWORD` - Senha do email
 
 ## Deploy no Railway
+Consulte o README.md para passo a passo completo:
 1. Conecte o repositório ao Railway
 2. Adicione um banco PostgreSQL
 3. Configure as variáveis de ambiente
@@ -74,5 +77,6 @@ gunicorn config.wsgi --bind 0.0.0.0:$PORT
   - Configurações de segurança movidas para variáveis de ambiente
   - Adicionado whitenoise para servir arquivos estáticos
   - Adicionado gunicorn para servidor de produção
-  - Criado Procfile e railway.json
-  - Corrigidos bugs nos modelos
+  - Criado Procfile, railway.json, nixpacks.toml e runtime.txt
+  - Corrigidos bugs nos modelos e caminho de imagens
+  - README.md atualizado com passo a passo completo para Railway
