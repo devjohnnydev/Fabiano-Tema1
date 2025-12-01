@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from .forms import SignUpForm, SignInForm, ProfileForm, NotificationForm
+from django.contrib.auth import views as auth_views
 
 # --- 1. LOGIN VIEW (Substitui o AuthView / handle_signin) ---
 def login_view(request):
@@ -168,3 +169,29 @@ def disconnect_google_view(request):
             messages.error(request, 'Nenhuma conta Google encontrada.')
             
     return redirect('settings')
+
+# Em accounts/views.py (No final)
+
+class DebugPasswordResetView(auth_views.PasswordResetView):
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        print(f"\n--- 🕵️‍♂️ DEBUG ESPIONAGEM ---")
+        print(f"1. Email digitado: {email}")
+        
+        # Busca usuários com esse email
+        users = list(form.get_users(email))
+        print(f"2. Usuários encontrados no banco: {len(users)}")
+        
+        if users:
+            user = users[0]
+            print(f"3. Usuário: {user.email}")
+            print(f"4. Tem senha utilizável? {user.has_usable_password()}")
+            print(f"5. Está ativo? {user.is_active}")
+            
+            if not user.has_usable_password():
+                print("🚨 PROBLEMA ENCONTRADO: Este usuário não tem senha (login social?) então o Django IGNORA o envio.")
+        else:
+            print("🚨 PROBLEMA: Nenhum usuário encontrado com esse email!")
+            
+        print("------------------------------\n")
+        return super().form_valid(form)

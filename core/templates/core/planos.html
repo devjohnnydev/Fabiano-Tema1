@@ -1,159 +1,79 @@
 {% extends "core/base_public.html" %}
+{% load static %}
 
 {% block title %}Planos - Media Scope{% endblock %}
 
 {% block content %}
 <style>
-    .pricing-header {
-        text-align: center;
-        margin: 40px 0;
-    }
-    .pricing-header h1 {
-        font-size: 3rem;
-        color: var(--text-color);
-        margin-bottom: 20px;
-    }
-    .pricing-header p {
-        font-size: 1.2rem;
-        color: var(--text-muted);
-        margin-bottom: 30px;
+    /* --- ESTILOS ORIGINAIS DA PÁGINA --- */
+    .pricing-header { text-align: center; margin: 40px 0; }
+    .pricing-header h1 { font-size: 3rem; color: var(--text-color); margin-bottom: 20px; }
+    .pricing-header p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px; }
+
+    .plan-toggle { display: inline-flex; background-color: var(--card-bg); border-radius: 30px; padding: 5px; }
+    .plan-toggle button { border: none; background-color: transparent; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 10px 25px; border-radius: 30px; cursor: pointer; transition: all 0.2s ease-in-out; }
+    .plan-toggle button.active { background-color: var(--primary); color: var(--text-color); box-shadow: 0 4px 10px rgba(157, 78, 221, 0.3); }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 50px; }
+
+    .plan-card { background-color: var(--card-bg); border: 1px solid var(--card-bg); border-radius: 16px; padding: 30px; transition: all 0.2s ease-in-out; position: relative; display: flex; flex-direction: column; }
+    .plan-card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(157, 78, 221, 0.2); transform: translateY(-5px); }
+
+    .plan-card .popular-badge { position: absolute; top: 20px; right: -10px; background-color: var(--secondary); color: var(--text-color); font-size: 0.8rem; font-weight: 700; padding: 5px 15px; border-radius: 20px 0 0 20px; box-shadow: 0 2px 5px rgba(232, 69, 160, 0.3); }
+
+    .plan-icon { font-size: 2.5rem; color: var(--primary); background-color: var(--bg-color); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-bottom: 20px; }
+
+    .plan-card h3 { font-size: 1.5rem; color: var(--text-color); margin-bottom: 15px; }
+    .plan-price { font-size: 3rem; font-weight: 700; color: var(--text-color); margin-bottom: 30px; }
+    .plan-price span { font-size: 1rem; font-weight: 500; color: var(--text-muted); }
+
+    .plan-features { list-style: none; margin-bottom: 30px; flex: 1; }
+    .plan-features li { color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .plan-features .icon-check { font-size: 1.2rem; color: var(--primary); }
+
+    .plan-button { text-decoration: none; background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--text-muted); padding: 15px; display: block; text-align: center; border-radius: 10px; font-size: 1rem; font-weight: 600; transition: all 0.2s ease-in-out; cursor: pointer; }
+    .plan-card:hover .plan-button { background-color: var(--primary); border-color: var(--primary); }
+
+    /* --- ESTILOS DO POP-UP --- */
+    .popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex; justify-content: center; align-items: center;
+        visibility: hidden; opacity: 0;
+        transition: visibility 0s, opacity 0.3s linear;
+        z-index: 2000;
+        backdrop-filter: blur(5px);
     }
 
-    /* O seletor Mensal/Anual */
-    .plan-toggle {
-        display: inline-flex;
-        background-color: var(--card-bg);
-        border-radius: 30px;
-        padding: 5px;
-    }
-    .plan-toggle button {
-        border: none;
-        background-color: transparent;
-        color: var(--text-muted);
-        font-size: 1rem;
-        font-weight: 600;
-        padding: 10px 25px;
-        border-radius: 30px;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-    }
-    .plan-toggle button.active {
-        background-color: var(--primary);
-        color: var(--text-color);
-        box-shadow: 0 4px 10px rgba(157, 78, 221, 0.3);
-    }
+    .popup-overlay.active { visibility: visible; opacity: 1; }
 
-    /* Grid dos Planos */
-    .pricing-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 30px;
-        margin-top: 50px;
-    }
-
-    /* Card de Plano Individual */
-    .plan-card {
-        background-color: var(--card-bg);
-        border: 1px solid var(--card-bg);
+    .popup-content {
+        background: #27272a;
+        padding: 40px;
         border-radius: 16px;
-        padding: 30px;
-        transition: all 0.2s ease-in-out;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-    .plan-card:hover {
-        border-color: var(--primary);
-        box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
-        transform: translateY(-5px);
-    }
-
-    /* Tag "Mais Popular" */
-    .plan-card .popular-badge {
-        position: absolute;
-        top: 20px;
-        right: -10px;
-        background-color: var(--secondary);
-        color: var(--text-color);
-        font-size: 0.8rem;
-        font-weight: 700;
-        padding: 5px 15px;
-        border-radius: 20px 0 0 20px;
-        box-shadow: 0 2px 5px rgba(232, 69, 160, 0.3);
-    }
-
-    .plan-icon {
-        font-size: 2.5rem;
-        color: var(--primary);
-        background-color: var(--bg-color);
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        margin-bottom: 20px;
-    }
-
-    .plan-card h3 {
-        font-size: 1.5rem;
-        color: var(--text-color);
-        margin-bottom: 15px;
-    }
-
-    .plan-price {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 30px;
-    }
-    .plan-price span {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--text-muted);
-    }
-
-    .plan-features {
-        list-style: none;
-        margin-bottom: 30px;
-        flex: 1;
-    }
-    .plan-features li {
-        color: var(--text-muted);
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .plan-features .icon-check {
-        font-size: 1.2rem;
-        color: var(--primary);
-    }
-
-    .plan-button {
-        text-decoration: none;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        border: 1px solid var(--text-muted);
-        padding: 15px;
-        display: block;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        border: 1px solid #3f3f46;
+        width: 90%; max-width: 500px;
         text-align: center;
-        border-radius: 10px;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: all 0.2s ease-in-out;
-        cursor: pointer;
+        color: #fff;
     }
-    .plan-card:hover .plan-button {
-        background-color: var(--primary);
-        border-color: var(--primary);
-    }
+
+    .popup-content h1 { font-size: 1.5rem; color: #E845A0; margin-bottom: 20px; }
+    .popup-content p { color: #a0a0a0; font-size: 1rem; line-height: 1.6; margin-bottom: 30px; }
+
+    .popup-actions { display: flex; gap: 15px; justify-content: center; }
+
+    .btn-popup { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; }
+    .btn-confirm-popup { background-color: #9D4EDD; color: white; }
+    .btn-confirm-popup:hover { background-color: #7b2cbf; }
+    .btn-close-popup { background-color: transparent; border: 1px solid #a0a0a0; color: #a0a0a0; }
+    .btn-close-popup:hover { border-color: #fff; color: #fff; }
 
 </style>
 
 <div class="pricing-header">
     <h1>Simples preços, poderosos planos</h1>
-    <p>Simples, transparente preço que cresce junto com você. Experimente por 30 dias gratuitos.</p>
+    <p>Simples, transparente preço que cresce junto com você.</p>
 
     <div class="plan-toggle">
         <button class="active" id="btn-monthly">Mensal</button>
@@ -162,10 +82,8 @@
 </div>
 
 <div class="pricing-grid">
-
     {% for plan in plans %}
     <div class="plan-card">
-        
         {% if plan.name == 'Professional' %}
              <div class="popular-badge">MAIS POPULAR</div>
         {% endif %}
@@ -179,41 +97,54 @@
         <div class="plan-price" 
              data-monthly="{{ plan.price_monthly|floatformat:0 }}" 
              data-annual="{{ plan.price_annual|floatformat:0 }}">
-
             R${{ plan.price_monthly|floatformat:0 }}<span>/mês</span>
         </div>
 
         <ul class="plan-features">
-                   {% if plan.name == 'Essential' %}    
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboard básico</li>               
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos</li>           
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas por email</li>                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> 5.000 menções/mês</li>                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> 1 Usuário</li>
-                    {% elif plan.name == 'Professional' %}                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> 20.000 menções/mês</li>                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboards ilimitados</li>                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte prioritário</li>                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos avançada</li>                
-                            <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas multi-canais</li>
-                    {% elif plan.name == 'Enterprise' %}                <li><span class="material-symbols-outlined icon-check">check_circle</span> Menções ilimitadas</li>                <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise preditiva com IA</li>                <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte dedicado</li>                <li><span class="material-symbols-outlined icon-check">check_circle</span> Segurança enterprise</li>                <li><span class="material-symbols-outlined icon-check">check_circle</span> Alertas inteligentes 24/7</li>
+            {% if plan.name == 'Essential' %}
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboard básico</li>
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise de sentimentos</li>
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> 1 Usuário</li>
+            {% elif plan.name == 'Professional' %}
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Dashboards ilimitados</li>
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Análise avançada</li>
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Suporte prioritário</li>
+            {% elif plan.name == 'Enterprise' %}
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Tudo do Pro</li>
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Múltiplos Canais</li>
+                <li><span class="material-symbols-outlined icon-check">check_circle</span> Gerente Dedicado</li>
             {% else %}
                 <li><span class="material-symbols-outlined icon-check">check_circle</span> Acesso ao sistema</li>
             {% endif %}
         </ul>
 
         {% if user.is_authenticated %}
-            <a href="{% url 'upgrade_plan' plan.id %}?period=monthly" 
-               class="plan-button btn-upgrade"
-               data-base-url="{% url 'upgrade_plan' plan.id %}"
-               onclick="return confirm('Confirmar assinatura do plano {{ plan.name }}?')">
-               
-               {% if user.subscription.plan.id == plan.id %}
+            
+            {% if user.subscription.plan.id == plan.id %}
+                <a href="{% url 'upgrade_plan' plan.id %}?period=monthly" 
+                   class="plan-button btn-upgrade"
+                   data-base-url="{% url 'upgrade_plan' plan.id %}"
+                   onclick="triggerPopup(event, this.href)">
                    Renovar / Alterar Ciclo
-               {% else %}
+                </a>
+
+            {% elif user.subscription.plan and plan.price_monthly < user.subscription.plan.price_monthly %}
+                <button class="plan-button" 
+                        style="opacity: 0.5; cursor: not-allowed; background-color: #27272a; border-color: #3f3f46; color: #a0a0a0;" 
+                        disabled
+                        title="Disponível apenas no final do seu ciclo atual">
+                    Downgrade Indisponível
+                </button>
+
+            {% else %}
+                <a href="{% url 'upgrade_plan' plan.id %}?period=monthly" 
+                   class="plan-button btn-upgrade"
+                   data-base-url="{% url 'upgrade_plan' plan.id %}"
+                   onclick="triggerPopup(event, this.href)">
                    {% if plan.price_monthly == 0 %}Começar Grátis{% else %}Assinar Agora{% endif %}
-               {% endif %}
-            </a>
+                </a>
+            {% endif %}
+
         {% else %}
             <a href="{% url 'login' %}?next={% url 'upgrade_plan' plan.id %}" class="plan-button">
                 Comece agora
@@ -224,46 +155,167 @@
     {% endfor %}
 </div>
 
+<div id="popup-overlay" class="popup-overlay">
+    <div class="popup-content">
+        <span class="material-symbols-outlined" style="font-size: 3rem; color: #E845A0; margin-bottom: 10px;">warning</span>
+        <h1>Atenção, estrategista! 🚀</h1>
+        <p>
+            Uma vez que a assinatura for escolhida e confirmada, o ciclo de cobrança será iniciado imediatamente.
+            <br><br>
+            Não será possível reverter ou cancelar o período contratado até o seu término. 
+            Confira se o plano selecionado é o ideal para você!
+        </p>
+        <div class="popup-actions">
+            <button class="btn-popup btn-close-popup" onclick="closePopup()">Cancelar</button>
+            <button class="btn-popup btn-confirm-popup" id="btn-confirm-final">Confirmar Assinatura</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    const btnMonthly = document.getElementById('btn-monthly');
-    const btnAnnual = document.getElementById('btn-annual');
-    const prices = document.querySelectorAll('.plan-price');
-    const upgradeButtons = document.querySelectorAll('.btn-upgrade'); // Pega os botões
-
-    // Função mágica que atualiza os links
-    function updateLinks(period) {
-        upgradeButtons.forEach(btn => {
-            const baseUrl = btn.dataset.baseUrl;
-            if(baseUrl) {
-                btn.href = `${baseUrl}?period=${period}`;
-            }
-        });
-    }
-
-    btnMonthly.addEventListener('click', () => {
-        btnMonthly.classList.add('active');
-        btnAnnual.classList.remove('active');
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Pega a informação do Django (True ou False)
+        // O yesno converte o booleano Python para string "true" ou "false"
+        const isUserAnnual = "{{ is_annual|yesno:'true,false' }}" === "true";
         
-        prices.forEach(priceEl => {
-            priceEl.innerHTML = `R$${priceEl.dataset.monthly}<span>/mês</span>`;
-        });
+        console.log("DEBUG: O usuário é Anual?", isUserAnnual); // Olha no F12 se aparece true
 
-        // Avisa os botões que agora é Mensal
-        updateLinks('monthly');
-    });
-
-    btnAnnual.addEventListener('click', () => {
-        btnAnnual.classList.add('active');
-        btnMonthly.classList.remove('active');
+        // Elementos do DOM
+        const btnMonthly = document.getElementById('btn-monthly');
+        const btnAnnual = document.getElementById('btn-annual');
+        const prices = document.querySelectorAll('.plan-price');
+        // Pega todos os botões de upgrade (os links <a>)
+        const upgradeButtons = document.querySelectorAll('.btn-upgrade'); 
         
-        prices.forEach(priceEl => {
-            const annualMonthlyPrice = parseFloat(priceEl.dataset.annual);
-            const totalAnnualPrice = Math.round(annualMonthlyPrice * 12);
-            priceEl.innerHTML = `R$${totalAnnualPrice}<span>/ano</span>`;
-        });
+        const popupOverlay = document.getElementById('popup-overlay');
+        const btnConfirmFinal = document.getElementById('btn-confirm-final');
+        
+        let targetUrl = ''; // Guarda o link para o popup
 
-        // Avisa os botões que agora é Anual
-        updateLinks('annual');
+        // --- FUNÇÕES GLOBAIS (Para o HTML acessar o onclick) ---
+        window.triggerPopup = function(event, url) {
+            event.preventDefault();
+            targetUrl = url;
+            if(popupOverlay) popupOverlay.classList.add('active');
+        };
+
+        window.closePopup = function() {
+            if(popupOverlay) popupOverlay.classList.remove('active');
+            targetUrl = '';
+        };
+
+        // --- FUNÇÃO 1: BLOQUEIO E DESBLOQUEIO DE BOTÕES ---
+        function updateButtonsState(period) {
+            upgradeButtons.forEach(btn => {
+                // Guarda o estado original na primeira vez
+                if (!btn.dataset.originalText) {
+                    btn.dataset.originalText = btn.innerText.trim();
+                    btn.dataset.originalHref = btn.getAttribute('href');
+                    btn.dataset.originalOnclick = btn.getAttribute('onclick'); // Guarda o evento original
+                }
+
+                // LÓGICA: Se usuário é Anual E está na aba Mensal
+                if (isUserAnnual && period === 'monthly') {
+                    // --- MODO BLOQUEADO (NUCLEAR) ---
+                    console.log("Bloqueando botão:", btn);
+                    
+                    btn.innerText = "Disponível no fim do ciclo";
+                    
+                    // Visual de Bloqueado
+                    btn.style.opacity = "0.5";
+                    btn.style.cursor = "not-allowed";
+                    btn.style.backgroundColor = "#3f3f46";
+                    btn.style.borderColor = "#3f3f46";
+                    btn.style.color = "#a0a0a0";
+                    
+                    // A TRAVA REAL: Remove o link e impede cliques do mouse
+                    btn.removeAttribute('href');
+                    btn.removeAttribute('onclick'); // Remove o triggerPopup do HTML
+                    btn.style.pointerEvents = 'none'; // CSS Nuclear: O mouse passa direto
+                    
+                } else {
+                    // --- MODO LIBERADO (RESTAURA) ---
+                    // Só mexe se o botão NÃO for um botão de downgrade (que já vem disabled do HTML)
+                    if (btn.tagName === 'A') { 
+                        btn.innerText = btn.dataset.originalText;
+                        
+                        // Restaura Visual
+                        btn.style.opacity = "1";
+                        btn.style.cursor = "pointer";
+                        btn.style.backgroundColor = "";
+                        btn.style.borderColor = "";
+                        btn.style.color = "";
+                        btn.style.pointerEvents = 'auto'; // Devolve o clique
+
+                        // Restaura Link e Evento
+                        const baseUrl = btn.dataset.baseUrl;
+                        if (baseUrl) {
+                            const separator = baseUrl.includes('?') ? '&' : '?';
+                            const finalUrl = `${baseUrl}${separator}period=${period}`;
+                            
+                            btn.setAttribute('href', finalUrl);
+                            // Restaura o onclick original mas com a URL nova
+                            btn.setAttribute('onclick', `triggerPopup(event, '${finalUrl}')`);
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- FUNÇÃO 2: ABAS MENSAL / ANUAL ---
+        if (btnMonthly && btnAnnual) {
+            
+            // Clique no MENSAL
+            btnMonthly.addEventListener('click', () => {
+                btnMonthly.classList.add('active');
+                btnAnnual.classList.remove('active');
+
+                prices.forEach(priceEl => {
+                    const val = priceEl.getAttribute('data-monthly');
+                    priceEl.innerHTML = `R$${val}<span>/mês</span>`;
+                });
+
+                updateButtonsState('monthly');
+            });
+
+            // Clique no ANUAL
+            btnAnnual.addEventListener('click', () => {
+                btnAnnual.classList.add('active');
+                btnMonthly.classList.remove('active');
+
+                prices.forEach(priceEl => {
+                    const annualMonthlyPrice = parseFloat(priceEl.getAttribute('data-annual'));
+                    const total = Math.round(annualMonthlyPrice * 12);
+                    priceEl.innerHTML = `R$${total}<span>/ano</span>`;
+                });
+
+                updateButtonsState('annual');
+            });
+        }
+
+        // --- FUNÇÃO 3: CONFIRMAR POPUP ---
+        if (btnConfirmFinal) {
+            btnConfirmFinal.addEventListener('click', function() {
+                if (targetUrl) {
+                    window.location.href = targetUrl;
+                }
+            });
+        }
+
+        // Fechar clicando fora
+        if (popupOverlay) {
+            popupOverlay.addEventListener('click', function(e) {
+                if (e.target === this) window.closePopup();
+            });
+        }
+
+        // --- INICIALIZAÇÃO IMEDIATA ---
+        // Se a página carregar e a aba Mensal estiver ativa (padrão), roda a verificação
+        if (btnMonthly && btnMonthly.classList.contains('active')) {
+            updateButtonsState('monthly');
+        } else {
+            updateButtonsState('annual');
+        }
     });
 </script>
 {% endblock %}

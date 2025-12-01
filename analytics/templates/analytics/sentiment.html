@@ -1,154 +1,221 @@
 {% extends "analytics/base.html" %}
+{% load static %}
+
 {% block title %}Análise de Sentimentos - Media Scope{% endblock %}
 
 {% block content %}
-
 <style>
-    /* Estilo da Caixa de Pesquisa */
+    .sentiment-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .header-box h2 {
+        color: var(--primary);
+        margin-bottom: 10px;
+    }
     .search-box {
-        background: #18181b;
-        padding: 40px;
+        background-color: var(--card-bg);
+        padding: 30px;
         border-radius: 12px;
-        border: 1px solid #3f3f46;
-        margin-bottom: 40px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        box-shadow: var(--shadow);
+        margin-bottom: 30px;
     }
-    .search-input {
-        width: 60%;
-        padding: 15px 20px;
+    .custom-select {
+        width: 100%;
+        padding: 12px;
+        background-color: var(--bg-color);
+        border: 1px solid #444;
+        color: var(--text-color);
         border-radius: 8px;
-        border: 1px solid #3f3f46;
-        background: #27272a;
-        color: #fff;
-        font-size: 1.1rem;
-        margin-right: 10px;
-        outline: none;
-        transition: 0.2s;
+        font-size: 1rem;
+        margin-bottom: 20px;
     }
-    .search-input:focus { border-color: #9D4EDD; }
-    
     .btn-analyze {
-        padding: 15px 30px;
-        background: #9D4EDD;
-        color: #fff;
+        width: 100%;
+        padding: 15px;
+        background-color: var(--primary);
+        color: white;
         border: none;
         border-radius: 8px;
         font-weight: bold;
         font-size: 1.1rem;
         cursor: pointer;
-        transition: 0.2s;
+        transition: 0.3s;
     }
-    .btn-analyze:hover { background: #7b3cb3; transform: scale(1.05); }
+    .btn-analyze:hover {
+        background-color: #7b2cbf;
+    }
 
-    /* Cards de Estatísticas */
-    .stats-grid {
+    /* Estilos dos Cards de Resultado */
+    .results-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 20px;
         margin-bottom: 30px;
     }
     .stat-card {
-        padding: 25px;
+        background-color: var(--card-bg);
+        padding: 20px;
         border-radius: 12px;
         text-align: center;
-        border: 1px solid;
+        box-shadow: var(--shadow);
     }
-    .stat-number { font-size: 3rem; font-weight: 800; margin-bottom: 5px; }
-    .stat-label { font-size: 1.1rem; font-weight: 500; }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 10px 0;
+    }
+    .stat-label { color: var(--text-muted); }
+    
+    .pos { color: #00C49F; }
+    .neu { color: #FFBB28; }
+    .neg { color: #FF8042; }
 
-    /* Cores dos Cards */
-    .card-pos { background: rgba(0, 196, 159, 0.1); border-color: #00C49F; color: #00C49F; }
-    .card-neg { background: rgba(232, 69, 160, 0.1); border-color: #E845A0; color: #E845A0; }
-    .card-neu { background: rgba(160, 160, 160, 0.1); border-color: #A0A0A0; color: #A0A0A0; }
-
-    /* Lista de Comentários */
-    .comments-container {
-        background: #18181b;
+    /* Área de Comentários */
+    .comments-section {
+        background-color: var(--card-bg);
+        padding: 25px;
         border-radius: 12px;
-        border: 1px solid #3f3f46;
-        padding: 20px;
     }
     .comment-item {
-        border-bottom: 1px solid #3f3f46;
-        padding: 20px 0;
+        border-bottom: 1px solid #444;
+        padding: 15px 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .comment-item:last-child { border-bottom: none; }
-    
-    .author-name { display: block; font-weight: bold; color: #fff; margin-bottom: 5px; }
-    .comment-text { color: #a0a0a0; font-size: 0.95rem; }
-    
-    .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
-    .badge-pos { background: #00C49F; color: #000; }
-    .badge-neg { background: #E845A0; color: #fff; }
-    .badge-neu { background: #52525b; color: #fff; }
-/* Novo Estilo do Dropdown (Select) */
-    .custom-select {
-        width: 60%;
-        padding: 15px 20px;
-        border-radius: 8px;
-        border: 1px solid #3f3f46;
-        background: #27272a; /* Fundo escuro */
-        color: #fff;
-        font-size: 1.1rem;
-        margin-right: 10px;
-        outline: none;
-        cursor: pointer;
-        appearance: none; /* Remove a seta padrão feia do navegador */
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right 15px center;
-        background-size: 1em;
-    }
-    .custom-select:focus {
-        border-color: #9D4EDD;
+    .comment-text { color: #ddd; font-style: italic; }
+    .comment-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: #121212;
     }
 </style>
 
-<div class="search-box" id="analysis-form-container">
-        <form method="POST" id="sentiment-form">
-            {% csrf_token %}
+<div class="sentiment-container">
+    
+    <div class="header-box">
+        <h2>Inteligência Artificial de Sentimentos</h2>
+        <p style="color: var(--text-muted);">Descubra o que seu público realmente sente sobre seu conteúdo.</p>
+    </div>
+    <br>
+
+    {% if summary %}
+        <div class="results-area">
+            <h3 style="margin-bottom: 20px;">Resultados para: <span style="color: var(--primary);">{{ video_title }}</span></h3>
             
-            {% if user_videos %}
-                <select name="video_id" class="custom-select" required>
-                    <option value="" disabled selected>Selecione um vídeo do seu canal...</option>
-                    {% for video in user_videos %}
-                        <option value="{{ video.id }}" {% if selected_video_id == video.id %}selected{% endif %}>
-                            {{ video.title }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="btn-analyze">Analisar</button>
-            {% else %}
-                <p style="color: #E845A0;">Não encontramos vídeos ou conecte o Google.</p>
+            <div class="results-grid">
+                <div class="stat-card">
+                    <span class="material-symbols-outlined pos">sentiment_satisfied</span>
+                    <div class="stat-number pos">{{ summary.positive }}</div>
+                    <div class="stat-label">Comentários Positivos</div>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-outlined neu">sentiment_neutral</span>
+                    <div class="stat-number neu">{{ summary.neutral }}</div>
+                    <div class="stat-label">Comentários Neutros</div>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-outlined neg">sentiment_dissatisfied</span>
+                    <div class="stat-number neg">{{ summary.negative }}</div>
+                    <div class="stat-label">Comentários Negativos</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 40px;">
+                <a href="{% url 'sentiment_analysis' %}" class="btn-analyze" style="text-decoration: none; display: inline-block; width: auto; padding: 10px 30px;">
+                    Analisar Outro Vídeo
+                </a>
+            </div>
+
+            <div class="comments-section">
+                <h3>Amostra de Comentários Analisados</h3>
+                <br>
+                {% for comment in comments|slice:":5" %}
+                <div class="comment-item">
+                    <div style="max-width: 80%;">
+                        <div class="comment-text">"{{ comment.original }}"</div>
+                        <div style="font-size: 0.8rem; color: #777; margin-top: 5px;">Traduzido: {{ comment.translated }}</div>
+                    </div>
+                    <div>
+                        {% if comment.sentiment > 0.1 %}
+                            <span class="comment-badge" style="background: #00C49F;">Positivo</span>
+                        {% elif comment.sentiment < -0.1 %}
+                            <span class="comment-badge" style="background: #FF8042;">Negativo</span>
+                        {% else %}
+                            <span class="comment-badge" style="background: #FFBB28;">Neutro</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    {% else %}
+        <div class="search-box" id="analysis-form-container">
+            <form method="POST" id="sentiment-form">
+                {% csrf_token %}
+                
+                {% if user_videos %}
+                    <label style="display: block; margin-bottom: 10px; color: var(--text-muted);">Selecione um vídeo recente:</label>
+                    <select name="video_id" class="custom-select" required>
+                        <option value="" disabled selected>Escolha um vídeo...</option>
+                        {% for video in user_videos %}
+                            <option value="{{ video.id }}">{{ video.title }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <button type="submit" class="btn-analyze">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">psychology</span>
+                        Iniciar Análise com IA
+                    </button>
+                {% else %}
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="color: #E845A0; margin-bottom: 15px;">Não encontramos vídeos no seu canal.</p>
+                        <a href="{% url 'settings' %}" style="color: var(--primary);">Verifique sua conexão com o Google nas Configurações</a>
+                    </div>
+                {% endif %}
+            </form>
+            
+            {% if error %}
+                <div style="background: rgba(232, 69, 160, 0.1); color: #E845A0; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <strong>Ops!</strong> {{ error }}
+                </div>
             {% endif %}
-        </form>
-        {% if error %}
-            <div style="color: #E845A0; margin-top: 15px; font-weight: bold;">{{ error }}</div>
-        {% endif %}
-    </div>
+        </div>
 
-    <div id="loading-container" style="display: none; text-align: center; padding: 40px;">
-        <img src="{% static 'img/loading.gif' %}" alt="Carregando..." style="width: 80px; height: auto;">
-        <h3 style="color: #fff; margin-top: 20px;">Analisando comentários com IA...</h3>
-        <p style="color: #a0a0a0;">Isso pode levar alguns segundos.</p>
-    </div>
+        <div id="loading-container" style="display: none; text-align: center; padding: 60px 20px;">
+            <img src="{% static 'img/loading.gif' %}" alt="Carregando..." style="width: 80px; height: auto; margin-bottom: 20px;">
+            
+            <h2 style="color: #fff;">Analisando Comentários...</h2>
+            <p style="color: #a0a0a0; margin-top: 10px;">A IA está lendo, traduzindo e classificando sentimentos.</p>
+            <p style="color: var(--primary); font-size: 0.9rem; margin-top: 5px;">Isso pode levar alguns segundos.</p>
+        </div>
 
-    </div> <script>
-    const form = document.getElementById('sentiment-form');
-    const formContainer = document.getElementById('analysis-form-container');
-    const loadingContainer = document.getElementById('loading-container');
+    {% endif %}
 
-    if (form) {
-        form.addEventListener('submit', function() {
-            // 1. Esconde o formulário
-            formContainer.style.display = 'none';
-            // 2. Mostra o GIF
-            loadingContainer.style.display = 'block';
-        });
-    }
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('sentiment-form');
+        const formContainer = document.getElementById('analysis-form-container');
+        const loadingContainer = document.getElementById('loading-container');
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // NÃO usamos e.preventDefault() aqui, senão o formulário não envia!
+                
+                // Apenas trocamos a visualização
+                if (formContainer) formContainer.style.display = 'none';
+                if (loadingContainer) loadingContainer.style.display = 'block';
+                
+                // O navegador continua o processo de envio (POST) normalmente
+            });
+        }
+    });
 </script>
+
 {% endblock %}

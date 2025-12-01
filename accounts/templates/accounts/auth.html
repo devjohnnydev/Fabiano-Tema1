@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -13,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-image: url("/static/images/fundo.png");
+            background-image: url("{% static 'img/fundo.png' %}");
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -362,7 +363,7 @@
         <button class="close-btn" onclick="window.location.href='/'">×</button>
         
         <div class="logo-container">
-            <img src="/static/images/logo.png" alt="Media Scope Logo">
+            <img src="{% static 'img/logo.png' %}" alt="Media Scope Logo">
         </div>
 
         <!-- Sistema de Mensagens/Alertas -->
@@ -446,7 +447,7 @@
 
             <div class="divider">OR</div>
 
-            <form method="POST" action="{% url 'login' %}">
+            <form method="POST" action="{% url 'register' %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="signup">
                 
@@ -507,6 +508,43 @@
                 setTimeout(() => messages.remove(), 500);
             }
         }, 5000);
+
+        // 1. Função padrão do Django para ler cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // 2. O Pulo do Gato
+    // Pega todos os formulários da página (Login e Cadastro)
+    const forms = document.querySelectorAll('form');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            // Antes de enviar, pega o token "fresco" do navegador
+            const freshToken = getCookie('csrftoken');
+            
+            if (freshToken) {
+                // Procura o input escondido do CSRF dentro desse form
+                const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (csrfInput) {
+                    // Atualiza o valor velho pelo novo!
+                    csrfInput.value = freshToken;
+                    console.log("Token CSRF atualizado automaticamente! 🔄");
+                }
+            }
+        });
+    });
     </script>
 </body>
 </html>

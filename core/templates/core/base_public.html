@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -86,13 +87,21 @@
             color: var(--text-muted);
             margin-bottom: 15px;
         }
+
+        
+        .logo-img {
+            width: 50px; /* Tamanho ideal para a sidebar de 80px */
+            height: auto; /* Mantém a proporção */
+            filter: drop-shadow(0 0 5px rgba(157, 78, 221, 0.3)); /* Um brilho sutil roxo */
+            transition: transform 0.2s;
+        }
     </style>
 </head>
 <body>
 
     <header class="public-header">
         <a href="{% url 'home' %}" class="logo">
-            <span class="material-symbols-outlined">ads_click</span>
+            <img src="{% static 'img/logoside.png' %}" alt="Media Scope" class="logo-img">
             Media Scope
         </a>
         <nav>

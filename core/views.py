@@ -5,6 +5,9 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
 from subscriptions.models import Subscription, Payment, Plan
 from django.contrib.auth import logout
+from django.http import HttpResponse
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 # Isso checa se o usuário é um 'superuser'. Se não, ele dá erro.
@@ -130,3 +133,16 @@ def custom_logout_view(request):
     """
     logout(request)
     return redirect('home')
+
+def debug_email_view(request):
+    try:
+        send_mail(
+            subject='Teste Forçado pelo Site',
+            message='Se chegou, o settings.py está 100%.',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[settings.EMAIL_HOST_USER], # Manda pra você mesmo
+            fail_silently=False, # <--- OBRIGA A DAR ERRO SE FALHAR
+        )
+        return HttpResponse("<h1>SUCESSO! Email enviado.</h1>")
+    except Exception as e:
+        return HttpResponse(f"<h1>ERRO:</h1> <p>{e}</p>")

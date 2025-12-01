@@ -195,8 +195,8 @@ def dashboard_view(request):
 def sentiment_analysis_view(request):
     context = {}
     user_videos = [] 
-
-    # --- PASSO 1: BUSCAR VÍDEOS (Igual a antes) ---
+    
+    # --- PASSO 1: BUSCAR VÍDEOS DO CANAL (Para o select) ---
     try:
         social = request.user.social_auth.get(provider='google-oauth2')
         credentials = Credentials(token=social.extra_data['access_token'])
@@ -213,14 +213,30 @@ def sentiment_analysis_view(request):
                 'title': item['snippet']['title']
             })
     except Exception as e:
-        context['error'] = "Não foi possível carregar seus vídeos."
+        context['error'] = "Não foi possível carregar seus vídeos. Verifique o login Google."
 
-    # --- PASSO 2: ANÁLISE COM TRADUÇÃO ---
+    # --- PASSO 2: PROCESSAR ANÁLISE (Quando clica no botão) ---
     if request.method == 'POST':
         video_id = request.POST.get('video_id')
         
+        print(f"\n--- 🕵️‍♂️ DEBUG INICIADO ---")
+        print(f"1. ID Recebido: {video_id}")
+
         if video_id:
             try:
+                # 2.1 Busca o Título do Vídeo específico (Pra ficar bonito na tela)
+                video_response = youtube.videos().list(
+                    part='snippet',
+                    id=video_id
+                ).execute()
+                
+                video_title = "Vídeo sem título"
+                if video_response['items']:
+                    video_title = video_response['items'][0]['snippet']['title']
+                
+                print(f"2. Título encontrado: {video_title}")
+
+                # 2.2 Busca os Comentários
                 response_comments = youtube.commentThreads().list(
                     part="snippet", videoId=video_id, maxResults=50, textFormat="plainText"
                 ).execute()
@@ -230,55 +246,63 @@ def sentiment_analysis_view(request):
                 negative = 0
                 neutral = 0
                 
-                # Inicializa o tradutor
                 translator = GoogleTranslator(source='auto', target='en')
+
+                print(f"3. Iniciando análise de {len(response_comments['items'])} comentários...")
 
                 for item in response_comments['items']:
                     raw_text = item['snippet']['topLevelComment']['snippet']['textDisplay']
                     author = item['snippet']['topLevelComment']['snippet']['authorDisplayName']
                     
-                    # --- A MÁGICA DA TRADUÇÃO ---
+                    # Tradução
                     try:
-                        # Traduz para Inglês para o TextBlob entender
                         translated_text = translator.translate(raw_text)
                     except:
-                        # Se falhar (internet, etc), usa o original mesmo
                         translated_text = raw_text
 
-                    # Analisa o texto traduzido (mas mostra o original na tela)
+                    # Análise
                     blob = TextBlob(translated_text)
                     polarity = blob.sentiment.polarity
                     
-                    # Ajustei os limiares para ser mais sensível
                     if polarity > 0.1:
                         sentiment = 'Positivo'
-                        css_class = 'badge-pos'
                         positive += 1
                     elif polarity < -0.1:
                         sentiment = 'Negativo'
-                        css_class = 'badge-neg'
                         negative += 1
                     else:
                         sentiment = 'Neutro'
-                        css_class = 'badge-neu'
                         neutral += 1
                         
                     comments_data.append({
                         'author': author,
-                        'text': raw_text, # Mostra o original em PT-BR
-                        'sentiment': sentiment,
-                        'css': css_class
+                        'original': raw_text,    # O HTML usa .original
+                        'translated': translated_text, # O HTML usa .translated
+                        'sentiment': polarity    # O HTML usa o número para decidir a cor
                     })
                 
+                # --- AQUI ESTAVA O ERRO DE COMPATIBILIDADE ---
+                # O Template espera 'summary' com chaves 'positive', 'neutral', 'negative'
+                summary_data = {
+                    'positive': positive,
+                    'negative': negative,
+                    'neutral': neutral,
+                    'total': positive + negative + neutral
+                }
+
+                print(f"4. SUCESSO! Resumo: {summary_data}")
+
+                # Atualiza o contexto com os nomes CERTOS pro HTML
                 context.update({
-                    'selected_video_id': video_id,
-                    'comments': comments_data,
-                    'stats': {'pos': positive, 'neg': negative, 'neu': neutral, 'total': positive + negative + neutral}
+                    'summary': summary_data,      # <--- Agora bate com {% if summary %}
+                    'comments': comments_data,    # <--- Agora bate com {% for comment in comments %}
+                    'video_title': video_title,
+                    'selected_video_id': video_id
                 })
                 
             except Exception as e:
-                print(f"ERRO: {e}")
-                context['error'] = "Erro ao analisar comentários."
+                print(f"🚨 ERRO CRÍTICO NA ANÁLISE: {e}")
+                context['error'] = f"Erro ao analisar: {str(e)}"
 
     context['user_videos'] = user_videos
     return render(request, 'analytics/sentiment.html', context)
