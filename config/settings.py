@@ -94,6 +94,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
+    'accounts.pipeline.save_youtube_channel_data', # <--- O SEU ARQUIVO
 )
 
 from django.contrib.messages import constants as messages
