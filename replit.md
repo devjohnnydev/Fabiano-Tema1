@@ -88,11 +88,10 @@ gunicorn config.wsgi --bind 0.0.0.0:$PORT
 ```
 
 ## Alterações Recentes
-- 02/12/2025: Projeto preparado para deploy no Render
-  - Criado build.sh para build automático
-  - Criado render.yaml com configuração do banco PostgreSQL
-  - Adicionado domínio *.onrender.com em CSRF_TRUSTED_ORIGINS
-  - Atualizado .env.example com instruções para Render
+- 02/12/2025: Projeto configurado para deploy no Railway
+  - Configuração padrão alterada para Railway
+  - CSRF_TRUSTED_ORIGINS configurado para *.railway.app
+  - .env.example atualizado com instruções para Railway
 
 - 01/12/2025: Projeto preparado para deploy no Railway
   - Configurações de segurança movidas para variáveis de ambiente
