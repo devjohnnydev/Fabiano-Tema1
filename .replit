@@ -1,9 +1,10 @@
-modules = ["web", "nodejs-20", "python-3.11"]
+modules = ["web", "nodejs-20", "python-3.12"]
 [agent]
 expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["cacert", "cargo", "freetype", "grpc", "lcms2", "libffi", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pgadmin4", "pkg-config", "postgresql", "rustc", "tcl", "tk", "zlib"]
 
 [userenv]
 
@@ -42,3 +43,7 @@ externalPort = 80
 [[ports]]
 localPort = 36667
 externalPort = 3000
+
+[[ports]]
+localPort = 40345
+externalPort = 3001
