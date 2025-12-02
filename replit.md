@@ -69,6 +69,18 @@ Veja `.env.example` para lista completa:
 3. Configure as variáveis de ambiente
 4. O deploy será automático via Procfile
 
+## Scripts de Setup
+```bash
+# Setup completo do banco (migrações + cache + static)
+python setup_database.py
+
+# Popular dados iniciais (planos de assinatura)
+python seed_data.py
+
+# Criar superusuário
+python manage.py createsuperuser
+```
+
 ## Comandos Úteis
 ```bash
 # Rodar migrações

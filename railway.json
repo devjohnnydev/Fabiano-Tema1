@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && python manage.py createcachetable && python manage.py collectstatic --noinput && gunicorn config.wsgi --bind 0.0.0.0:$PORT",
+    "startCommand": "python setup_database.py && python seed_data.py && gunicorn config.wsgi --bind 0.0.0.0:$PORT",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
